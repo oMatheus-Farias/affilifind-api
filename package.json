@@ -1,0 +1,45 @@
+{
+  "name": "affilifind-api",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx --env-file=.env --watch src/main/server.ts",
+    "build": "tsup src/main/server.ts --format esm --out-dir dist",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.5.3",
+      "onFail": "download"
+    }
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.0.2",
+    "@commitlint/config-conventional": "21.0.2",
+    "@eslint/js": "10.0.1",
+    "@types/node": "25.9.2",
+    "eslint": "10.4.1",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-simple-import-sort": "13.0.0",
+    "globals": "17.6.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.0.7",
+    "prettier": "3.8.4",
+    "tsup": "8.5.1",
+    "tsx": "4.19.3",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.61.0"
+  },
+  "dependencies": {
+    "fastify": "5.8.5",
+    "zod": "4.4.3"
+  }
+}
