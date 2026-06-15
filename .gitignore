@@ -25,3 +25,5 @@ notes.md
 *.njsproj
 *.sln
 *.sw?
+
+/generated/prisma

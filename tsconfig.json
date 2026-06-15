@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./dist",
     "module": "nodenext",
     "target": "esnext",
@@ -21,9 +21,10 @@
     "baseUrl": ".",
     "paths": {
       "@main/*": ["src/main/*"],
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@infra/*": ["src/infra/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "prisma.config.ts"],
   "exclude": ["dist", "eslint.config.ts"]
 }

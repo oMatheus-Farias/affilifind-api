@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz() @map("created_at")
+
+  affiliateCredentials AffiliateCredential[]
+
+  @@map("users")
+}
+
+model AffiliateCredential {
+  id        String   @id @db.Uuid
+  userId    String   @db.Uuid @map("user_id")
+  platform  String
+  credentials Json
+  createdAt DateTime @default(now()) @db.Timestamptz() @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz() @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("affiliate_credentials")
+}
+
+model Promotion {
+  id          String   @id @db.Uuid
+  platform    String
+  externalId  String   @map("external_id")
+  title       String
+  description String
+  category    String
+  originalPrice Float   @map("original_price")
+  currentPrice  Float   @map("current_price")
+  discountPercentage Float @map("discount_percentage")
+  imageUrl    String   @map("image_url")
+  affiliateUrl String   @map("affiliate_url")
+  createdAt   DateTime @default(now()) @db.Timestamptz() @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz() @map("updated_at")
+
+  @@map("promotions")
+}
