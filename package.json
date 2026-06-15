@@ -1,7 +1,6 @@
 {
   "name": "affilifind-api",
   "version": "1.0.0",
-  "packageManager": "pnpm@11.5.3",
   "type": "module",
   "description": "",
   "main": "index.js",
