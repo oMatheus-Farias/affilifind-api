@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx --env-file=.env --watch src/main/server.ts",
-    "build": "tsup src/main/server.ts --format esm --out-dir dist",
+    "build": "tsup src/main/server.ts src/main/vercel.ts --format esm --out-dir dist",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
