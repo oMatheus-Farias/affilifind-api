@@ -1,4 +1,3 @@
-import { env } from '@shared/config/env.js';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { meliService } from 'src/services/meliService.js';
 
@@ -50,11 +49,9 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Rota 3: GET /api/sync/test-meli
   // Dispara uma busca real para testar a extração de dados
   fastify.get('/api/sync/test-meli', async (request: FastifyRequest, reply: FastifyReply) => {
-    const TOKEN_TEMPORARIO = env.TEMPORARY_MELI_ACCESS_TOKEN;
-
     try {
       // Vamos buscar por "Playstation 5" como teste
-      const produtos = await meliService.searchProducts('Playstation 5', TOKEN_TEMPORARIO);
+      const produtos = await meliService.searchProducts('Playstation 5');
 
       return reply.status(200).send({
         success: true,
