@@ -6,6 +6,7 @@ var schema = z.object({
   MELI_REDIRECT_URI: z.url(),
   MELI_CLIENT_ID: z.string(),
   MELI_CLIENT_SECRET: z.string(),
+  TEMPORARY_MELI_ACCESS_TOKEN: z.string(),
 });
 var env = schema.parse(process.env);
 
@@ -49,6 +50,37 @@ var meliService = {
       throw new Error(`Erro na chamada da API: ${errorDetail}`, { cause: error });
     }
   },
+  // 3. Busca produtos na API pública do Mercado Livre usando uma palavra-chave
+  async searchProducts(query, accessToken) {
+    try {
+      const response = await axios.get(`https://api.mercadolibre.com/sites/MLB/search`, {
+        params: {
+          q: query,
+          limit: 5,
+          // Vamos puxar só 5 itens para o teste ficar limpo no JSON
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'User-Agent': 'AffiliFind-App/1.0.0 (node-axios)',
+        },
+      });
+      return response.data.results.map((item) => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        original_price: item.original_price,
+        // Útil para calcular o % de desconto
+        permalink: item.permalink,
+        thumbnail: item.thumbnail,
+        condition: item.condition,
+      }));
+    } catch (error) {
+      const errorDetail = error.response?.data
+        ? JSON.stringify(error.response.data)
+        : error.message;
+      throw new Error(`Erro ao buscar produtos: ${errorDetail}`, { cause: error });
+    }
+  },
 };
 
 // src/routes/authRoutes.ts
@@ -80,6 +112,22 @@ async function authRoutes(fastify2) {
     } catch (error) {
       return reply.status(500).send({
         error: 'Falha ao trocar o c\xF3digo pelo token de acesso.',
+        details: error.message,
+      });
+    }
+  });
+  fastify2.get('/api/sync/test-meli', async (request, reply) => {
+    const TOKEN_TEMPORARIO = env.TEMPORARY_MELI_ACCESS_TOKEN;
+    try {
+      const produtos = await meliService.searchProducts('Playstation 5', TOKEN_TEMPORARIO);
+      return reply.status(200).send({
+        success: true,
+        total_items: produtos.length,
+        items: produtos,
+      });
+    } catch (error) {
+      return reply.status(500).send({
+        error: 'Falha ao buscar produtos no Mercado Livre.',
         details: error.message,
       });
     }

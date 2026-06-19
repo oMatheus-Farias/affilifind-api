@@ -42,4 +42,37 @@ export const meliService = {
       throw new Error(`Erro na chamada da API: ${errorDetail}`, { cause: error });
     }
   },
+
+  // 3. Busca produtos na API pública do Mercado Livre usando uma palavra-chave
+  async searchProducts(query: string, accessToken: string) {
+    try {
+      // O site do Brasil é o MLB
+      const response = await axios.get(`https://api.mercadolibre.com/sites/MLB/search`, {
+        params: {
+          q: query,
+          limit: 5, // Vamos puxar só 5 itens para o teste ficar limpo no JSON
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'User-Agent': 'AffiliFind-App/1.0.0 (node-axios)',
+        },
+      });
+
+      // Retorna a lista de resultados filtrada com o que nos interessa
+      return response.data.results.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        original_price: item.original_price, // Útil para calcular o % de desconto
+        permalink: item.permalink,
+        thumbnail: item.thumbnail,
+        condition: item.condition,
+      }));
+    } catch (error: any) {
+      const errorDetail = error.response?.data
+        ? JSON.stringify(error.response.data)
+        : error.message;
+      throw new Error(`Erro ao buscar produtos: ${errorDetail}`, { cause: error });
+    }
+  },
 };
