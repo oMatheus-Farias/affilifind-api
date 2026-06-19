@@ -7,7 +7,7 @@ const REDIRECT_URI = encodeURIComponent(env.MELI_REDIRECT_URI ?? '');
 export const meliService = {
   // 1. Gera o link que você vai clicar no navegador para dar "Permitir"
   getAuthorizationUrl() {
-    return `https://auth.mercadolibre.com.br/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}`;
+    return `https://auth.mercadolibre.com/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}`;
   },
 
   // 2. Troca o código que o Mercado Livre te dá pelo Token de Acesso real
