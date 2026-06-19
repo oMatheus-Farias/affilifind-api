@@ -6,7 +6,6 @@ var schema = z.object({
   MELI_REDIRECT_URI: z.url(),
   MELI_CLIENT_ID: z.string(),
   MELI_CLIENT_SECRET: z.string(),
-  TEMPORARY_MELI_ACCESS_TOKEN: z.string(),
 });
 var env = schema.parse(process.env);
 
@@ -53,32 +52,28 @@ var meliService = {
   // 3. Busca produtos na API pública do Mercado Livre usando uma palavra-chave
   async searchProducts(query, accessToken) {
     try {
-      const response = await axios.get(`https://api.mercadolibre.com/sites/MLB/search`, {
-        params: {
-          q: query,
-          limit: 5,
-          // Vamos puxar só 5 itens para o teste ficar limpo no JSON
-        },
+      const response = await axios.get(`https://api.mercadolibre.com/users/me`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'User-Agent': 'AffiliFind-App/1.0.0 (node-axios)',
         },
       });
-      return response.data.results.map((item) => ({
-        id: item.id,
-        title: item.title,
-        price: item.price,
-        original_price: item.original_price,
-        // Útil para calcular o % de desconto
-        permalink: item.permalink,
-        thumbnail: item.thumbnail,
-        condition: item.condition,
-      }));
+      return [
+        {
+          id: response.data.id,
+          title: `Conta Ativa: ${response.data.nickname}`,
+          price: 0,
+          original_price: 0,
+          permalink: response.data.site_status,
+          thumbnail: '',
+          condition: 'active',
+        },
+      ];
     } catch (error) {
       const errorDetail = error.response?.data
         ? JSON.stringify(error.response.data)
         : error.message;
-      throw new Error(`Erro ao buscar produtos: ${errorDetail}`, { cause: error });
+      throw new Error(`Erro ao validar token com /users/me: ${errorDetail}`, { cause: error });
     }
   },
 };

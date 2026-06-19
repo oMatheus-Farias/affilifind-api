@@ -12,6 +12,5 @@
       "src": "/(.*)",
       "dest": "dist/server.js"
     }
-  ],
-  "regions": ["gru1"]
+  ]
 }
