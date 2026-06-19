@@ -49,9 +49,18 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Rota 3: GET /api/sync/test-meli
   // Dispara uma busca real para testar a extração de dados
   fastify.get('/api/sync/test-meli', async (request: FastifyRequest, reply: FastifyReply) => {
+    // Captura o token vindo da URL: ?token=VALOR
+    const { token } = request.query as { token?: string };
+
+    if (!token) {
+      return reply
+        .status(400)
+        .send({ error: 'Por favor, passe o token na URL. Ex: ?token=APP_USR...' });
+    }
+
     try {
       // Vamos buscar por "Playstation 5" como teste
-      const produtos = await meliService.searchProducts('Playstation 5');
+      const produtos = await meliService.searchProducts('Playstation 5', token);
 
       return reply.status(200).send({
         success: true,

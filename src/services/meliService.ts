@@ -44,7 +44,7 @@ export const meliService = {
   },
 
   // 3. Busca produtos na API pública do Mercado Livre usando uma palavra-chave
-  async searchProducts(query: string) {
+  async searchProducts(query: string, accessToken: string) {
     try {
       // O site do Brasil é o MLB
       const response = await axios.get(`https://api.mercadolibre.com/sites/MLB/search`, {
@@ -53,6 +53,7 @@ export const meliService = {
           limit: 5, // Vamos puxar só 5 itens para o teste ficar limpo no JSON
         },
         headers: {
+          Authorization: `Bearer ${accessToken}`,
           'User-Agent': 'AffiliFind-App/1.0.0 (node-axios)',
         },
       });

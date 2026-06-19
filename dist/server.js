@@ -51,7 +51,7 @@ var meliService = {
     }
   },
   // 3. Busca produtos na API pública do Mercado Livre usando uma palavra-chave
-  async searchProducts(query) {
+  async searchProducts(query, accessToken) {
     try {
       const response = await axios.get(`https://api.mercadolibre.com/sites/MLB/search`, {
         params: {
@@ -60,6 +60,7 @@ var meliService = {
           // Vamos puxar só 5 itens para o teste ficar limpo no JSON
         },
         headers: {
+          Authorization: `Bearer ${accessToken}`,
           'User-Agent': 'AffiliFind-App/1.0.0 (node-axios)',
         },
       });
@@ -116,8 +117,14 @@ async function authRoutes(fastify2) {
     }
   });
   fastify2.get('/api/sync/test-meli', async (request, reply) => {
+    const { token } = request.query;
+    if (!token) {
+      return reply
+        .status(400)
+        .send({ error: 'Por favor, passe o token na URL. Ex: ?token=APP_USR...' });
+    }
     try {
-      const produtos = await meliService.searchProducts('Playstation 5');
+      const produtos = await meliService.searchProducts('Playstation 5', token);
       return reply.status(200).send({
         success: true,
         total_items: produtos.length,
