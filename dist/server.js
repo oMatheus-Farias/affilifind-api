@@ -10,15 +10,15 @@ var schema = z.object({
 var env = schema.parse(process.env);
 
 // src/main/app.ts
-import { fastify } from 'fastify';
-
 // src/services/meliService.ts
+import axios from 'axios';
+import { fastify } from 'fastify';
 var CLIENT_ID = env.MELI_CLIENT_ID;
 var REDIRECT_URI = encodeURIComponent(env.MELI_REDIRECT_URI ?? '');
 var meliService = {
   // 1. Gera o link que você vai clicar no navegador para dar "Permitir"
   getAuthorizationUrl() {
-    return `https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}`;
+    return `https://auth.mercadolibre.com.br/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}`;
   },
   // 2. Troca o código que o Mercado Livre te dá pelo Token de Acesso real
   async exchangeCodeForToken(code) {
@@ -29,16 +29,25 @@ var meliService = {
       code,
       redirect_uri: env.MELI_REDIRECT_URI ?? '',
     });
-    const response = await fetch('https://api.mercadolivre.com/oauth/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params,
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Erro ao obter token: ${JSON.stringify(errorData)}`);
+    try {
+      const { data } = await axios.post(
+        'https://api.mercadolibre.com/oauth/token',
+        params.toString(),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            // O Mercado Livre exige um User-Agent válido para não derrubar a requisição
+            'User-Agent': 'AffiliFind-App/1.0.0 (node-axios)',
+          },
+        },
+      );
+      return data;
+    } catch (error) {
+      const errorDetail = error.response?.data
+        ? JSON.stringify(error.response.data)
+        : error.message;
+      throw new Error(`Erro na chamada da API: ${errorDetail}`, { cause: error });
     }
-    return response.json();
   },
 };
 
