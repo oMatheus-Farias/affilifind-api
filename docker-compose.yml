@@ -1,0 +1,10 @@
+services:
+  postgres:
+    image: postgres:alpine
+    container_name: dev-affilifind-db-postgres
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: root
+      POSTGRES_DB: dev-affilifind
+    ports:
+      - '5432:5432'
