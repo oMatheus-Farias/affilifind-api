@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import { env } from '@shared/config/env.js';
+import { env } from '@shared/config/env';
 
-import { app } from './app.js';
+import { app } from './app';
 
 async function main() {
   try {
