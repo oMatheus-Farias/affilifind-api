@@ -1,75 +1,95 @@
+import { prismaClient } from '@infra/clients/prismaClient';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { meliService } from 'src/services/meliService.js';
+import { ShopeeGateway } from 'src/gateways/ShopeeGateway';
+
+const shopeeGateway = new ShopeeGateway();
 
 export async function authRoutes(fastify: FastifyInstance) {
-  // Rota 1: GET /api/auth/meli
-  // Cospe o link oficial do Mercado Livre para você clicar e autorizar o app
-  fastify.get('/api/auth/meli', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const authUrl = meliService.getAuthorizationUrl();
+  /**
+   * GET /api/sync/test-shopee
+   * Single endpoint to validate authentication, "Achadinhos" scraping, and Supabase storage via Prisma.
+   * Usage: http://localhost:3000/api/sync/test-shopee?appId=YOUR_APP_ID&secret=YOUR_SECRET_KEY&keyword=phone
+   */
+  fastify.get('/api/sync/test-shopee', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { appId, secret, keyword } = request.query as {
+      appId?: string;
+      secret?: string;
+      keyword?: string;
+    };
 
-      return reply.status(200).send({
-        message: 'Clique no link abaixo para autorizar a aplicação no Mercado Livre:',
-        url: authUrl,
-      });
-    } catch (error: any) {
-      return reply.status(500).send({ error: error.message });
-    }
-  });
-
-  // Rota 2: GET /api/auth/callback/meli
-  // O Mercado Livre vai redirecionar para cá trazendo o "?code=XXXX" na URL
-  fastify.get('/api/auth/callback/meli', async (request: FastifyRequest, reply: FastifyReply) => {
-    const { code } = request.query as { code?: string };
-
-    if (!code) {
-      return reply
-        .status(400)
-        .send({ error: 'Código de autorização não fornecido pelo Mercado Livre.' });
-    }
-
-    try {
-      // Troca o código temporário pelo Access Token e Refresh Token reais
-      const tokenData = await meliService.exchangeCodeForToken(code);
-
-      // Por enquanto, vamos apenas cuspir o token na tela para validar que funcionou.
-      // No futuro, salvaremos esses dados com segurança no Supabase.
-      return reply.status(200).send({
-        message: 'Autenticação realizada com sucesso!',
-        data: tokenData,
-      });
-    } catch (error: any) {
-      return reply.status(500).send({
-        error: 'Falha ao trocar o código pelo token de acesso.',
-        details: error.message,
+    if (!appId || !secret) {
+      return reply.status(400).send({
+        error: 'Missing credentials',
+        message:
+          'Please provide both appId and secret via query params. Example: ?appId=123&secret=abc',
       });
     }
-  });
 
-  // Rota 3: GET /api/sync/test-meli
-  // Dispara uma busca real para testar a extração de dados
-  fastify.get('/api/sync/test-meli', async (request: FastifyRequest, reply: FastifyReply) => {
-    // Captura o token vindo da URL: ?token=VALOR
-    const { token } = request.query as { token?: string };
-
-    if (!token) {
-      return reply
-        .status(400)
-        .send({ error: 'Por favor, passe o token na URL. Ex: ?token=APP_USR...' });
-    }
+    const searchKeyword = keyword || 'makeup';
 
     try {
-      // Vamos buscar por "Playstation 5" como teste
-      const produtos = await meliService.searchProducts('Playstation 5', token);
+      // 1. Fetch products from Shopee API Affiliate Gateway
+      const foundProducts = await shopeeGateway.searchPromotions({
+        keyword: searchKeyword,
+        appId,
+        secret,
+      });
 
+      let createdCount = 0;
+      let updatedCount = 0;
+
+      // 2. Sync products with database using Prisma upsert
+      for (const product of foundProducts) {
+        // Check if item already exists to determine if it's an update or creation
+        const existingPromotion = await prismaClient.promotion.findUnique({
+          where: { externalId: product.externalId },
+          select: { id: true },
+        });
+
+        if (existingPromotion) {
+          updatedCount++;
+        } else {
+          createdCount++;
+        }
+
+        await prismaClient.promotion.upsert({
+          where: {
+            externalId: product.externalId,
+          },
+          update: {
+            title: product.title,
+            currentPrice: product.currentPrice,
+            imageUrl: product.imageUrl,
+            affiliateUrl: product.affiliateUrl,
+            updatedAt: new Date(),
+          },
+          create: {
+            platform: product.platform,
+            externalId: product.externalId,
+            title: product.title,
+            currentPrice: product.currentPrice,
+            originalPrice: product.originalPrice,
+            discountPercentage: product.discountPercentage,
+            imageUrl: product.imageUrl,
+            affiliateUrl: product.affiliateUrl,
+          },
+        });
+      }
+
+      // 3. Respond with structural feedback
       return reply.status(200).send({
         success: true,
-        total_items: produtos.length,
-        items: produtos,
+        message: `Sync executed successfully for keyword: "${searchKeyword}"`,
+        summary: {
+          itemsReceivedFromApi: foundProducts.length,
+          itemsCreatedInDb: createdCount,
+          itemsUpdatedInDb: updatedCount,
+        },
+        items: foundProducts,
       });
     } catch (error: any) {
       return reply.status(500).send({
-        error: 'Falha ao buscar produtos no Mercado Livre.',
+        error: 'Failed to execute Shopee integrated sync test.',
         details: error.message,
       });
     }
