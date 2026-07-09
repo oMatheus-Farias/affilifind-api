@@ -1,17 +1,18 @@
+import { env } from '@shared/config/env.js';
 import axios from 'axios';
 import crypto from 'crypto';
 
 export class ShopeeGateway {
   private readonly apiUrl: string;
+  private readonly appId: string;
+  private readonly secret: string;
 
   constructor() {
-    this.apiUrl = 'https://open-api.affiliate.shopee.com.br/v2/api';
+    this.apiUrl = env.SHOPEE_API_URL;
+    this.appId = env.SHOPEE_APP_ID;
+    this.secret = env.SHOPEE_SECRET;
   }
 
-  /**
-   * Auxiliar privado para gerar a assinatura criptográfica HMAC-SHA256
-   * obrigatória em todas as chamadas da API de Afiliados da Shopee.
-   */
   private generateHeaderSignature({
     timestamp,
     payload,
@@ -27,41 +28,52 @@ export class ShopeeGateway {
     return crypto.createHash('sha256').update(factor).digest('hex');
   }
 
-  /**
-   * Varre a API de Afiliados buscando produtos por palavra-chave e aplicando
-   * filtros iniciais para identificar oportunidades dos "Achadinhos".
-   */
   public async searchPromotions({
     keyword,
-    appId,
-    secret,
+    page = 1,
+    limit = 20,
+    sortType = 5,
+    listType = 1,
   }: {
     keyword: string;
-    appId: string;
-    secret: string;
+    page?: number;
+    limit?: number;
+    sortType?: number;
+    listType?: number;
   }): Promise<ShopeeGateway.ShopeeProductPromotionOutput[]> {
     const timestamp = Math.floor(Date.now() / 1000);
 
-    // Query oficial em GraphQL exigida pela Open API de Afiliados da Shopee
     const graphqlQuery = {
-      query: `
-        query getProductList($keyword: String, $limit: Int) {
-          productItems(keyword: $keyword, limit: $limit) {
-            nodes {
-              itemId
-              productName
-              price
-              priceMin
-              priceMax
-              image
-              productLink
-            }
+      query: `query Fetch($keyword: String, $listType: Int, $sortType: Int, $page: Int, $limit: Int) {
+        productOfferV2(keyword: $keyword, listType: $listType, sortType: $sortType, page: $page, limit: $limit) {
+          nodes {
+            itemId
+            productName
+            productLink
+            offerLink
+            imageUrl
+            priceMin
+            priceMax
+            priceDiscountRate
+            sales
+            ratingStar
+            commissionRate
+            commission
+            shopName
+          }
+          pageInfo {
+            page
+            limit
+            hasNextPage
           }
         }
-      `,
+      }`,
       variables: {
-        keyword: keyword,
-        limit: 10, // Puxa 10 itens por execução para o robô avaliar
+        keyword,
+        listType,
+        sortType,
+        page,
+        limit,
       },
     };
 
@@ -69,47 +81,52 @@ export class ShopeeGateway {
     const signature = this.generateHeaderSignature({
       timestamp,
       payload: payloadString,
-      appId,
-      secret,
+      appId: this.appId,
+      secret: this.secret,
     });
 
     try {
-      const { data } = await axios.post(this.apiUrl, payloadString, {
+      const response = await axios.post(this.apiUrl, payloadString, {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `SHA256 Credential=${appId}, Timestamp=${timestamp}, Signature=${signature}`,
-          'User-Agent': 'AffiliFind-App/1.0.0 (node-axios)',
+          Authorization: `SHA256 Credential=${this.appId}, Timestamp=${timestamp}, Signature=${signature}`,
+          'User-Agent': 'AffiliFind-App/1.0.0',
         },
       });
 
-      // Validação interna do retorno GraphQL da Shopee
-      if (data.errors) {
-        throw new Error(`Erros retornados pelo GraphQL da Shopee: ${JSON.stringify(data.errors)}`);
+      const responseData = response.data;
+
+      if (responseData.errors) {
+        throw new Error(`GraphQL Errors from Shopee: ${JSON.stringify(responseData.errors)}`);
       }
 
-      const items = data.data?.productItems?.nodes || [];
+      const items = responseData.data?.productOfferV2?.nodes || [];
 
-      // Mapeia e normaliza os dados vindos da Shopee para bater certinho com o seu Modelo Promotion do Prisma
       return items.map((item: any) => {
-        const currentPrice = item.price || item.priceMin || 0;
+        const finalAffiliateUrl = item.offerLink || item.productLink || '';
 
         return {
           externalId: String(item.itemId),
           title: item.productName,
-          currentPrice: Number(currentPrice),
-          originalPrice: null,
-          discountPercentage: null,
-          imageUrl: item.image || '',
-          affiliateUrl: item.productLink || '',
+          currentPrice: Number(item.priceMin || 0),
+          maxPrice: Number(item.priceMax || 0),
+          discountPercentage: item.priceDiscountRate ? Number(item.priceDiscountRate) : null,
+          imageUrl: item.imageUrl || '',
+          affiliateUrl: finalAffiliateUrl,
+          originalProductUrl: item.productLink || '',
+          salesCount: item.sales ? Number(item.sales) : 0,
+          rating: item.ratingStar ? Number(item.ratingStar) : 5,
+          commissionAmount: item.commission ? Number(item.commission) : 0,
+          shopName: item.shopName || '',
           platform: 'shopee',
         };
       });
     } catch (error: any) {
-      const errorDetail = error.response?.data
-        ? JSON.stringify(error.response.data)
+      const errorMessage = error.response
+        ? `Status ${error.response.status}: ${JSON.stringify(error.response.data)}`
         : error.message;
 
-      throw new Error(`Erro na chamada do ShopeeGateway: ${errorDetail}`, { cause: error });
+      throw new Error(`Error during ShopeeGateway call: ${errorMessage}`, { cause: error });
     }
   }
 }
@@ -119,10 +136,15 @@ export namespace ShopeeGateway {
     externalId: string;
     title: string;
     currentPrice: number;
-    originalPrice: number | null;
+    maxPrice: number;
     discountPercentage: number | null;
     imageUrl: string;
     affiliateUrl: string;
+    originalProductUrl: string;
+    salesCount: number;
+    rating: number;
+    commissionAmount: number;
+    shopName: string;
     platform: string;
   };
 }

@@ -39,9 +39,15 @@ model Promotion {
   category           String?
   originalPrice      Float?   @map("original_price")
   currentPrice       Float    @map("current_price")
+  maxPrice           Float?   @map("max_price")
   discountPercentage Float?   @map("discount_percentage")
   imageUrl           String   @map("image_url")
   affiliateUrl       String   @map("affiliate_url")
+  originalProductUrl String?  @map("original_product_url")
+  salesCount         Int      @default(0) @map("sales_count")
+  rating             Float    @default(5.0)
+  commissionAmount   Float?   @map("commission_amount")
+  shopName           String?  @map("shop_name")
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
 
