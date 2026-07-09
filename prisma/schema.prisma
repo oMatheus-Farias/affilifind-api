@@ -8,9 +8,9 @@ datasource db {
 }
 
 model User {
-  id        String   @id @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
   email     String   @unique
-  createdAt DateTime @default(now()) @db.Timestamptz() @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
 
   affiliateCredentials AffiliateCredential[]
 
@@ -18,32 +18,38 @@ model User {
 }
 
 model AffiliateCredential {
-  id        String   @id @db.Uuid
-  userId    String   @db.Uuid @map("user_id")
-  platform  String
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  platform    String
   credentials Json
-  createdAt DateTime @default(now()) @db.Timestamptz() @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz() @map("updated_at")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("affiliate_credentials")
 }
 
 model Promotion {
-  id          String   @id @db.Uuid
-  platform    String
-  externalId  String   @map("external_id")
-  title       String
-  description String
-  category    String
-  originalPrice Float   @map("original_price")
-  currentPrice  Float   @map("current_price")
-  discountPercentage Float @map("discount_percentage")
-  imageUrl    String   @map("image_url")
-  affiliateUrl String   @map("affiliate_url")
-  createdAt   DateTime @default(now()) @db.Timestamptz() @map("created_at")
-  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz() @map("updated_at")
+  id                 String   @id @default(uuid()) @db.Uuid
+  platform           String
+  externalId         String   @unique @map("external_id")
+  title              String
+  description        String?  @db.Text
+  category           String?
+  originalPrice      Float?   @map("original_price")
+  currentPrice       Float    @map("current_price")
+  maxPrice           Float?   @map("max_price")
+  discountPercentage Float?   @map("discount_percentage")
+  imageUrl           String   @map("image_url")
+  affiliateUrl       String   @map("affiliate_url")
+  originalProductUrl String?  @map("original_product_url")
+  salesCount         Int      @default(0) @map("sales_count")
+  rating             Float    @default(5.0)
+  commissionAmount   Float?   @map("commission_amount")
+  shopName           String?  @map("shop_name")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
 
   @@map("promotions")
 }
