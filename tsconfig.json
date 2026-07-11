@@ -18,12 +18,16 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
+      "@application/*": ["src/application/*"],
+      "@infra/*": ["src/infra/*"],
+      "@kermel/*": ["src/kermel/*"],
       "@main/*": ["src/main/*"],
-      "@shared/*": ["src/shared/*"],
-      "@infra/*": ["src/infra/*"]
+      "@shared/*": ["src/shared/*"]
     }
   },
   "include": ["src/**/*", "prisma.config.ts"],
