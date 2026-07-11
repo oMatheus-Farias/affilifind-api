@@ -2,7 +2,7 @@ import { Controller } from '@application/domain/contracts/Controller';
 import { SyncShopeeProductsUseCase } from '@application/usecases/shopee/SyncShopeeProductsUseCase';
 import { Injectable } from '@kermel/decorators/Injectable';
 
-import { syncShopeeProductsSchema } from './schemas/syncShopeeProductsSchema';
+import { type SyncShopeeProductsBody } from './schemas/syncShopeeProductsSchema';
 
 @Injectable()
 export class SyncShopeeProductsController extends Controller<
@@ -14,17 +14,13 @@ export class SyncShopeeProductsController extends Controller<
   }
 
   protected override async handle({
-    queryParams,
-  }: Controller.Request<'private'>): Promise<
+    body,
+  }: Controller.Request<'private', SyncShopeeProductsBody>): Promise<
     Controller.Response<SyncShopeeProductsController.Response>
   > {
-    const { keyword } = queryParams as SyncShopeeProductsController.Request;
+    const { keywords } = body;
 
-    const { keyword: keywordParsed } = syncShopeeProductsSchema.parse({ keyword });
-
-    const { foundProducts, summary } = await this.syncShopeeProductsUseCase.execute({
-      keyword: keywordParsed,
-    });
+    const { foundProducts, summary } = await this.syncShopeeProductsUseCase.execute({ keywords });
 
     return {
       statusCode: 200,

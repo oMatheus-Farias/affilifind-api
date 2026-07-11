@@ -26,8 +26,8 @@ export class ShopeeGateway {
     keyword,
     page = 1,
     limit = 20,
-    sortType = 5,
-    listType = 1,
+    sortType = 1,
+    listType = 2,
   }: {
     keyword: string;
     page?: number;

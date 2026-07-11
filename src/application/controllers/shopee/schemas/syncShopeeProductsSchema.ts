@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
 export const syncShopeeProductsSchema = z.object({
-  keyword: z.string("'keyword' query parameter must be a string"),
+  keywords: z.array(z.string(), "'keywords' query parameter must be a array of strings").optional(),
 });
+
+export type SyncShopeeProductsBody = z.infer<typeof syncShopeeProductsSchema>;

@@ -7,5 +7,5 @@ export async function shopeeRoutes(app: FastifyInstance) {
 
   const syncShopeeProductsController = fastifyAdapter(SyncShopeeProductsController);
 
-  app.get(`${prefix}/sync`, { schema: {} }, syncShopeeProductsController);
+  app.post(`${prefix}/sync`, { schema: {} }, syncShopeeProductsController);
 }
