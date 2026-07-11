@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { prismaClient } from '@infra/clients/prismaClient';
 import { env } from '@shared/config/env';
 
 import { app } from './app';
@@ -22,3 +23,13 @@ async function main() {
   }
 }
 main();
+
+const shutdown = async () => {
+  console.log('🛑 Shutting down server...');
+  await app.close();
+  await prismaClient.$disconnect();
+  process.exit(0);
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
