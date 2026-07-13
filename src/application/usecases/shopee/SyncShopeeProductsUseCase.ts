@@ -28,19 +28,31 @@ export class SyncShopeeProductsUseCase {
     let totalReceived = 0;
     let createdCount = 0;
     let updatedCount = 0;
-    const allFoundProducts: any[] = [];
+    const allSavedProducts: any[] = [];
 
     for (const keyword of keywords) {
-      // eslint-disable-next-line no-console
-      console.log(`[Sync Shopee] Iniciando varredura para o termo: "${keyword}"`);
-
       try {
-        const foundProducts = await this.shopeeGateway.searchPromotions({ keyword });
+        // Parametrizado com listType (Top Performance) e sortType (Mais Vendidos) para achar custo-benefício
+        const foundProducts = await this.shopeeGateway.searchPromotions({
+          keyword,
+          limit: 20,
+          listType: 2,
+          sortType: 2,
+        });
 
         totalReceived += foundProducts.length;
-        allFoundProducts.push(...foundProducts);
 
         for (const product of foundProducts) {
+          const rating = product.rating ? Number(product.rating) : 0;
+          const salesCount = product.sales_count ? Number(product.sales_count) : 0;
+
+          // Filtro de corte: Rejeita produtos mal avaliados ou sem validação de mercado (vendas)
+          if (rating < 4.7 || salesCount < 100) {
+            continue;
+          }
+
+          allSavedProducts.push(product);
+
           const existingPromotion = await this.promotionRepository.findByExternalId({
             externalId: product.external_id,
           });
@@ -99,7 +111,7 @@ export class SyncShopeeProductsUseCase {
     }
 
     return {
-      foundProducts: allFoundProducts,
+      foundProducts: allSavedProducts,
       summary: {
         itemsReceivedFromApi: totalReceived,
         itemsCreatedInDb: createdCount,
