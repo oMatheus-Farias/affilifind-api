@@ -11,7 +11,8 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "seed:keywords": "tsx src/infra/scripts/seedKeywords.ts"
   },
   "keywords": [],
   "author": "",

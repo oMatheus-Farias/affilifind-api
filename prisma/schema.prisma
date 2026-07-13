@@ -8,9 +8,9 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String   @id @db.Uuid
   email     String   @unique
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   affiliateCredentials AffiliateCredential[]
 
@@ -18,12 +18,12 @@ model User {
 }
 
 model AffiliateCredential {
-  id          String   @id @default(uuid()) @db.Uuid
+  id          String   @id @db.Uuid
   userId      String   @map("user_id") @db.Uuid
   platform    String
   credentials Json
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -31,7 +31,7 @@ model AffiliateCredential {
 }
 
 model Promotion {
-  id                 String   @id @default(uuid()) @db.Uuid
+  id                 String   @id @db.Uuid
   platform           String
   externalId         String   @unique @map("external_id")
   title              String
@@ -48,8 +48,20 @@ model Promotion {
   rating             Float    @default(5.0)
   commissionAmount   Float?   @map("commission_amount")
   shopName           String?  @map("shop_name")
-  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@map("promotions")
+}
+
+model SearchKeyword {
+  id         String    @id @db.Uuid
+  keyword    String    @unique
+  category   String
+  isActive   Boolean   @default(true) @map("is_active")
+  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("search_keywords")
 }

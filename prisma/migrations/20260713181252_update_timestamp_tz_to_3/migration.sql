@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE "affiliate_credentials" ALTER COLUMN "created_at" SET DATA TYPE TIMESTAMPTZ(3),
+ALTER COLUMN "updated_at" SET DATA TYPE TIMESTAMPTZ(3);
+
+-- AlterTable
+ALTER TABLE "promotions" ALTER COLUMN "created_at" SET DATA TYPE TIMESTAMPTZ(3),
+ALTER COLUMN "updated_at" SET DATA TYPE TIMESTAMPTZ(3);
+
+-- AlterTable
+ALTER TABLE "search_keywords" ALTER COLUMN "last_used_at" SET DATA TYPE TIMESTAMPTZ(3),
+ALTER COLUMN "created_at" SET DATA TYPE TIMESTAMPTZ(3),
+ALTER COLUMN "updated_at" SET DATA TYPE TIMESTAMPTZ(3);
+
+-- AlterTable
+ALTER TABLE "users" ALTER COLUMN "created_at" SET DATA TYPE TIMESTAMPTZ(3);

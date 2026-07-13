@@ -1,6 +1,7 @@
 import type { Promotion } from '@application/entities/Promotion';
 import { prismaClient } from '@infra/clients/prismaClient';
 import { Injectable } from '@kermel/decorators/Injectable';
+import { uuidv7 } from 'uuidv7';
 
 @Injectable()
 export class PromotionRepository {
@@ -34,6 +35,7 @@ export class PromotionRepository {
         updatedAt: new Date(),
       },
       create: {
+        id: uuidv7(),
         platform: create.platform,
         externalId,
         title: create.title,
