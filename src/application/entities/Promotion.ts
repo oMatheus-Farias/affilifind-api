@@ -9,17 +9,18 @@ export class Promotion {
   readonly affiliateUrl: string;
   readonly salesCount: number;
   readonly rating: number;
+  readonly category: string;
   readonly id?: string | null;
   readonly description?: string | null;
-  readonly category?: string | null;
   readonly originalPrice?: number | null;
   readonly maxPrice?: number | null;
   readonly discountPercentage?: number | null;
   readonly originalProductUrl?: string | null;
   readonly commissionAmount?: number | null;
   readonly shopName?: string | null;
+  readonly sentAt?: Date | null;
   readonly createdAt?: Date | null;
-  readonly updatedAt?: Date | null;
+  updatedAt?: Date | null;
 
   constructor(attributes: Promotion.Attributes) {
     this.platform = attributes.platform;
@@ -30,15 +31,16 @@ export class Promotion {
     this.affiliateUrl = attributes.affiliateUrl;
     this.salesCount = attributes.salesCount;
     this.rating = attributes.rating;
+    this.category = attributes.category;
     this.id = attributes.id || uuidv7();
     this.description = attributes.description || null;
-    this.category = attributes.category || null;
     this.originalPrice = attributes.originalPrice || null;
     this.maxPrice = attributes.maxPrice || null;
     this.discountPercentage = attributes.discountPercentage || null;
     this.originalProductUrl = attributes.originalProductUrl || null;
     this.commissionAmount = attributes.commissionAmount || null;
     this.shopName = attributes.shopName || null;
+    this.sentAt = attributes.sentAt || null;
     this.createdAt = attributes.createdAt || new Date();
     this.updatedAt = attributes.updatedAt || new Date();
   }
@@ -54,15 +56,16 @@ export namespace Promotion {
     affiliateUrl: string;
     salesCount: number;
     rating: number;
+    category: string;
     id?: string | null;
     description?: string | null;
-    category?: string | null;
     originalPrice?: number | null;
     maxPrice?: number | null;
     discountPercentage?: number | null;
     originalProductUrl?: string | null;
     commissionAmount?: number | null;
     shopName?: string | null;
+    sentAt?: Date | null;
     createdAt?: Date | null;
     updatedAt?: Date | null;
   };

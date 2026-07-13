@@ -22,6 +22,7 @@ export class PromotionRepository {
       where: { externalId },
       update: {
         title: update.title,
+        category: update.category,
         currentPrice: update.currentPrice,
         maxPrice: update.maxPrice,
         discountPercentage: update.discountPercentage,
@@ -39,6 +40,7 @@ export class PromotionRepository {
         platform: create.platform,
         externalId,
         title: create.title,
+        category: create.category,
         currentPrice: create.currentPrice,
         maxPrice: create.maxPrice,
         originalPrice: null,
@@ -60,6 +62,7 @@ export namespace PromotionRepository {
     externalId: string;
     update: {
       title: string;
+      category: string;
       currentPrice: number;
       maxPrice: number | null;
       discountPercentage: number | null;
@@ -74,6 +77,7 @@ export namespace PromotionRepository {
     create: {
       platform: string;
       title: string;
+      category: string;
       currentPrice: number;
       maxPrice: number | null;
       originalPrice?: number | null;

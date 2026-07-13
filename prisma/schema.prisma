@@ -36,7 +36,7 @@ model Promotion {
   externalId         String   @unique @map("external_id")
   title              String
   description        String?  @db.Text
-  category           String?
+  category           String
   originalPrice      Float?   @map("original_price")
   currentPrice       Float    @map("current_price")
   maxPrice           Float?   @map("max_price")
@@ -48,6 +48,7 @@ model Promotion {
   rating             Float    @default(5.0)
   commissionAmount   Float?   @map("commission_amount")
   shopName           String?  @map("shop_name")
+  sentAt             DateTime? @map("sent_at") @db.Timestamptz(3)
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 

@@ -14,28 +14,30 @@ export class SyncShopeeProductsUseCase {
   async execute(
     input?: SyncShopeeProductsUseCase.Input,
   ): Promise<SyncShopeeProductsUseCase.Output> {
-    let keywords: string[];
+    let searchTargets: Array<{ keyword: string; category: string }>;
 
     if (input?.keywords && input.keywords.length > 0) {
-      keywords = input.keywords;
+      // Se enviado manualmente, associa uma categoria padrão "geral"
+      searchTargets = input.keywords.map((kw) => ({ keyword: kw, category: 'geral' }));
     } else {
-      const { keywords: dynamicKeywords } = await this.getDynamicKeywordsQuery.execute({
-        limit: 5,
+      const { keywords } = await this.getDynamicKeywordsQuery.execute({
+        limit: 10, // Aumentado para 10 para buscar as 10 categorias dinâmicas
       });
-      keywords = dynamicKeywords;
+      searchTargets = keywords;
     }
 
-    if (keywords.length === 0) {
-      keywords = [
-        'organizador casa',
-        'celular',
-        'maquiagem',
-        'garrafa termica',
-        'oculos escuros',
-        'brinquedo pet',
-        'teclado mecanico',
-        'achados tiktok',
-        'necessaire viagem',
+    // Fallback estático caso o banco esteja vazio
+    if (searchTargets.length === 0) {
+      searchTargets = [
+        { keyword: 'organizador casa', category: 'casa' },
+        { keyword: 'celular', category: 'tech' },
+        { keyword: 'maquiagem', category: 'beleza' },
+        { keyword: 'garrafa termica', category: 'gadgets' },
+        { keyword: 'oculos escuros', category: 'moda' },
+        { keyword: 'brinquedo pet', category: 'outros' },
+        { keyword: 'teclado mecanico', category: 'tech' },
+        { keyword: 'achados tiktok', category: 'gadgets' },
+        { keyword: 'necessaire viagem', category: 'outros' },
       ];
     }
 
@@ -44,13 +46,14 @@ export class SyncShopeeProductsUseCase {
     let updatedCount = 0;
     const allSavedProducts: any[] = [];
 
-    for (const keyword of keywords) {
+    for (const target of searchTargets) {
+      const { keyword, category } = target;
       const strategyRandomizer = Math.random() > 0.5;
       const listType = strategyRandomizer ? 2 : 1;
       const strategyName = listType === 2 ? 'Top Performance' : 'Maior Comissão';
 
       // eslint-disable-next-line no-console
-      console.log(`[Sync Shopee] Varrendo: "${keyword}" via Estratégia: [${strategyName}]`);
+      console.log(`[Sync Shopee] Varrendo: "${keyword}" (Cat: ${category}) via [${strategyName}]`);
 
       try {
         const foundProducts = await this.shopeeGateway.searchPromotions({
@@ -86,6 +89,7 @@ export class SyncShopeeProductsUseCase {
             externalId: product.external_id,
             update: {
               title: product.title,
+              category,
               currentPrice: product.current_price,
               maxPrice: product.max_price,
               discountPercentage: product.discount_percentage,
@@ -100,6 +104,7 @@ export class SyncShopeeProductsUseCase {
             create: {
               platform: product.platform,
               title: product.title,
+              category,
               currentPrice: product.current_price,
               maxPrice: product.max_price,
               originalPrice: null,
@@ -115,7 +120,7 @@ export class SyncShopeeProductsUseCase {
           });
         }
 
-        if (keywords.indexOf(keyword) < keywords.length - 1) {
+        if (searchTargets.indexOf(target) < searchTargets.length - 1) {
           await new Promise((resolve) => setTimeout(resolve, 1200));
         }
       } catch (error: any) {
