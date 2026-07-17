@@ -8,6 +8,8 @@ export class AppConfig {
 
   readonly shopee: AppConfig.Shopee;
 
+  readonly telegram: AppConfig.Telegram;
+
   constructor() {
     this.database = {
       postgres: {
@@ -19,6 +21,14 @@ export class AppConfig {
       apiUrl: env.SHOPEE_API_URL,
       appId: env.SHOPEE_APP_ID,
       secret: env.SHOPEE_SECRET,
+    };
+
+    this.telegram = {
+      apiUrl: env.TELEGRAM_API_URL,
+      botToken: env.TELEGRAM_BOT_TOKEN,
+      channelChatId: env.TELEGRAM_CHANNEL_CHAT_ID,
+      promotionsCron: env.TELEGRAM_PROMOTIONS_CRON,
+      promotionsTimezone: env.TELEGRAM_PROMOTIONS_TIMEZONE,
     };
   }
 }
@@ -34,5 +44,13 @@ export namespace AppConfig {
     apiUrl: string;
     appId: string;
     secret: string;
+  };
+
+  export type Telegram = {
+    apiUrl: string;
+    botToken: string;
+    channelChatId: string;
+    promotionsCron: string;
+    promotionsTimezone: string;
   };
 }

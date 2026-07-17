@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
     "postinstall": "prisma generate",
-    "seed:keywords": "tsx src/infra/scripts/seedKeywords.ts"
+    "seed:keywords": "tsx src/infra/scripts/seedKeywords.ts",
+    "job:telegram-promotions": "tsx src/infra/scripts/runTelegramPromotionsJob.ts"
   },
   "keywords": [],
   "author": "",
@@ -51,6 +52,7 @@
     "axios": "1.18.0",
     "dotenv": "17.4.2",
     "fastify": "5.8.5",
+    "node-cron": "^4.6.0",
     "pg": "8.21.0",
     "reflect-metadata": "0.2.2",
     "uuidv7": "^1.2.1",
