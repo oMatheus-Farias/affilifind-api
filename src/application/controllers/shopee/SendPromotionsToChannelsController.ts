@@ -14,12 +14,12 @@ export class SendPromotionsToChannelsController extends Controller<
   protected override async handle(): Promise<
     Controller.Response<SendPromotionsToChannelsController.Response>
   > {
-    const { sentCount, message, products } = await this.sendPromotionsToChannelsUseCase.execute();
+    const { message, products, summary } = await this.sendPromotionsToChannelsUseCase.execute();
 
     return {
       statusCode: 200,
       body: {
-        sent_count: sentCount,
+        selected_count: summary.itemsSelectedForChannel,
         message: message,
         products: products.map((product) => ({
           id: product.id,
@@ -38,7 +38,7 @@ export namespace SendPromotionsToChannelsController {
   export type Request = void;
 
   export type Response = {
-    sent_count: number;
+    selected_count: number;
     message: string;
     products: Array<{
       id: string;

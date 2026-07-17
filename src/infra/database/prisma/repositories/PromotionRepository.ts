@@ -55,6 +55,17 @@ export class PromotionRepository {
       },
     });
   }
+
+  async markAsSent({ ids, sentAt = new Date() }: { ids: string[]; sentAt?: Date }): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    await prismaClient.promotion.updateMany({
+      where: { id: { in: ids } },
+      data: { sentAt },
+    });
+  }
 }
 
 export namespace PromotionRepository {

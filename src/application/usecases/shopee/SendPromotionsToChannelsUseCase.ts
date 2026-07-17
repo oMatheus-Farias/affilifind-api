@@ -4,17 +4,23 @@ import { Injectable } from '@kermel/decorators/Injectable';
 @Injectable()
 export class SendPromotionsToChannelsUseCase {
   async execute(): Promise<SendPromotionsToChannelsUseCase.Output> {
-    // 1. Busca produtos não enviados
     const pendingPromotions = await prismaClient.promotion.findMany({
       where: { sentAt: null },
       orderBy: { createdAt: 'desc' },
     });
 
     if (pendingPromotions.length === 0) {
-      return { sentCount: 0, message: 'Nenhuma promoção pendente para envio.', products: [] };
+      return {
+        message: 'Nenhuma promoção pendente para envio.',
+        products: [],
+        promotionIds: [],
+        summary: {
+          itemsReceivedFromDb: 0,
+          itemsSelectedForChannel: 0,
+        },
+      };
     }
 
-    // 2. Agrupa os produtos diretamente por seu campo nativo de categoria
     const promotionsByCategory: Record<string, typeof pendingPromotions> = {};
 
     for (const promotion of pendingPromotions) {
@@ -23,10 +29,10 @@ export class SendPromotionsToChannelsUseCase {
       if (!promotionsByCategory[category]) {
         promotionsByCategory[category] = [];
       }
+
       promotionsByCategory[category].push(promotion);
     }
 
-    // 3. Seleciona apenas 1 produto por categoria de forma aleatória até atingir 10
     const selectedPromotions: typeof pendingPromotions = [];
     const categories = Object.keys(promotionsByCategory).sort(() => Math.random() - 0.5);
 
@@ -35,61 +41,62 @@ export class SendPromotionsToChannelsUseCase {
         break;
       }
 
-      const productsInCategories = promotionsByCategory[category];
+      const productsInCategory = promotionsByCategory[category];
 
-      if (productsInCategories && productsInCategories.length > 0) {
-        const randomIndex = Math.floor(Math.random() * productsInCategories.length);
-        const randomProduct = productsInCategories[randomIndex];
+      if (!productsInCategory || productsInCategory.length === 0) {
+        continue;
+      }
 
-        if (randomProduct) {
-          selectedPromotions.push(randomProduct);
-        }
+      const randomIndex = Math.floor(Math.random() * productsInCategory.length);
+      const randomProduct = productsInCategory[randomIndex];
+
+      if (randomProduct) {
+        selectedPromotions.push(randomProduct);
       }
     }
 
-    const sentIds: string[] = [];
-
-    for (const promotion of selectedPromotions) {
-      // eslint-disable-next-line no-console
-      console.log(
-        `📢 [Disparo Canal] [Cat: ${promotion.category}] Enviando: "${promotion.title}" | R$ ${promotion.currentPrice}`,
-      );
-      sentIds.push(promotion.id);
-    }
-
-    if (sentIds.length > 0) {
-      await prismaClient.promotion.updateMany({
-        where: { id: { in: sentIds } },
-        data: { sentAt: new Date() },
-      });
-    }
-
     return {
-      sentCount: selectedPromotions.length,
-      message: `${selectedPromotions.length} achadinhos de categorias diferentes foram disparados com sucesso.`,
+      message: `${selectedPromotions.length} achadinhos de categorias diferentes foram preparados para envio.`,
       products: selectedPromotions.map((product) => ({
         id: product.id,
         title: product.title,
         currentPrice: product.currentPrice,
+        maxPrice: product.maxPrice,
+        discountPercentage: product.discountPercentage,
         imageUrl: product.imageUrl,
         affiliateUrl: product.affiliateUrl,
         category: product.category || 'outros',
+        salesCount: product.salesCount,
+        rating: product.rating,
       })),
+      promotionIds: selectedPromotions.map((promotion) => promotion.id),
+      summary: {
+        itemsReceivedFromDb: pendingPromotions.length,
+        itemsSelectedForChannel: selectedPromotions.length,
+      },
     };
   }
 }
 
 export namespace SendPromotionsToChannelsUseCase {
   export type Output = {
-    sentCount: number;
     message: string;
     products: Array<{
       id: string;
       title: string;
       currentPrice: number;
+      maxPrice: number | null;
+      discountPercentage: number | null;
       imageUrl: string;
       affiliateUrl: string;
       category: string;
+      salesCount: number;
+      rating: number;
     }>;
+    promotionIds: string[];
+    summary: {
+      itemsReceivedFromDb: number;
+      itemsSelectedForChannel: number;
+    };
   };
 }
