@@ -1,7 +1,7 @@
 {
   "name": "affilifind-api",
   "version": "1.0.0",
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@11.13.1",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -13,7 +13,7 @@
     "prepare": "husky",
     "postinstall": "prisma generate",
     "seed:keywords": "tsx src/infra/scripts/seedKeywords.ts",
-    "job:telegram-promotions": "tsx src/infra/scripts/runTelegramPromotionsJob.ts"
+    "job:telegram-promotions": "node --env-file=.env --import @swc-node/register/esm-register src/infra/scripts/runTelegramPromotionsJob.ts"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +21,7 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "11.11.0",
+      "version": "11.13.1",
       "onFail": "download"
     }
   },

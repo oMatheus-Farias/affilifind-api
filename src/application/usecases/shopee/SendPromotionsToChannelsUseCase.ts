@@ -9,21 +9,36 @@ export class SendPromotionsToChannelsUseCase {
       orderBy: { createdAt: 'desc' },
     });
 
-    if (pendingPromotions.length === 0) {
+    const eligiblePromotions = pendingPromotions.filter((promotion) => {
+      if (!promotion.affiliateUrl) {
+        return false;
+      }
+
+      if (promotion.originalProductUrl && promotion.affiliateUrl === promotion.originalProductUrl) {
+        return false;
+      }
+
+      return true;
+    });
+
+    if (eligiblePromotions.length === 0) {
       return {
-        message: 'Nenhuma promoção pendente para envio.',
+        message:
+          pendingPromotions.length === 0
+            ? 'Nenhuma promoção pendente para envio.'
+            : 'Nenhuma promoção pendente com link de afiliado válido para envio.',
         products: [],
         promotionIds: [],
         summary: {
-          itemsReceivedFromDb: 0,
+          itemsReceivedFromDb: pendingPromotions.length,
           itemsSelectedForChannel: 0,
         },
       };
     }
 
-    const promotionsByCategory: Record<string, typeof pendingPromotions> = {};
+    const promotionsByCategory: Record<string, typeof eligiblePromotions> = {};
 
-    for (const promotion of pendingPromotions) {
+    for (const promotion of eligiblePromotions) {
       const category = promotion.category || 'outros';
 
       if (!promotionsByCategory[category]) {
@@ -33,7 +48,7 @@ export class SendPromotionsToChannelsUseCase {
       promotionsByCategory[category].push(promotion);
     }
 
-    const selectedPromotions: typeof pendingPromotions = [];
+    const selectedPromotions: typeof eligiblePromotions = [];
     const categories = Object.keys(promotionsByCategory).sort(() => Math.random() - 0.5);
 
     for (const category of categories) {
@@ -65,6 +80,7 @@ export class SendPromotionsToChannelsUseCase {
         discountPercentage: product.discountPercentage,
         imageUrl: product.imageUrl,
         affiliateUrl: product.affiliateUrl,
+        originalProductUrl: product.originalProductUrl,
         category: product.category || 'outros',
         salesCount: product.salesCount,
         rating: product.rating,
@@ -89,6 +105,7 @@ export namespace SendPromotionsToChannelsUseCase {
       discountPercentage: number | null;
       imageUrl: string;
       affiliateUrl: string;
+      originalProductUrl: string | null;
       category: string;
       salesCount: number;
       rating: number;

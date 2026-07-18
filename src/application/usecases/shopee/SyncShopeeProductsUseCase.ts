@@ -73,6 +73,14 @@ export class SyncShopeeProductsUseCase {
             continue;
           }
 
+          if (!product.affiliate_url) {
+            // eslint-disable-next-line no-console
+            console.log(
+              `[Sync Shopee] Ignorando "${product.title}" porque a API não retornou link de afiliado.`,
+            );
+            continue;
+          }
+
           allSavedProducts.push(product);
 
           const existingPromotion = await this.promotionRepository.findByExternalId({

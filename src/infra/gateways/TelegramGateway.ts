@@ -21,11 +21,42 @@ export class TelegramGateway {
       messageId: data?.result?.message_id ?? null,
     };
   }
+
+  async sendChannelPhoto(input: TelegramGateway.PhotoInput): Promise<TelegramGateway.Output> {
+    const url = `${this.appConfig.telegram.apiUrl}/bot${this.appConfig.telegram.botToken}/sendPhoto`;
+
+    const { data } = await axios.post<TelegramGateway.TelegramSendPhotoResponse>(url, {
+      chat_id: this.appConfig.telegram.channelChatId,
+      photo: input.photo,
+      caption: input.caption,
+      parse_mode: 'HTML',
+      reply_markup: input.replyMarkup,
+      show_caption_above_media: false,
+    });
+
+    return {
+      ok: Boolean(data?.ok),
+      messageId: data?.result?.message_id ?? null,
+    };
+  }
 }
 
 export namespace TelegramGateway {
   export type Input = {
     text: string;
+  };
+
+  export type PhotoInput = {
+    photo: string;
+    caption: string;
+    replyMarkup: {
+      inline_keyboard: Array<
+        Array<{
+          text: string;
+          url: string;
+        }>
+      >;
+    };
   };
 
   export type Output = {
@@ -39,4 +70,6 @@ export namespace TelegramGateway {
       message_id: number;
     };
   };
+
+  export type TelegramSendPhotoResponse = TelegramSendMessageResponse;
 }

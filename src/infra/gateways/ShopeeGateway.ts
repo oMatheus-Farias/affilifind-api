@@ -95,8 +95,6 @@ export class ShopeeGateway {
       const items = data?.data?.productOfferV2?.nodes || [];
 
       return items.map((item) => {
-        const finalAffiliateUrl = item.offerLink || item.productLink || '';
-
         return {
           external_id: String(item.itemId),
           title: item.productName,
@@ -104,7 +102,7 @@ export class ShopeeGateway {
           max_price: Number(item.priceMax || 0),
           discount_percentage: item.priceDiscountRate ? Number(item.priceDiscountRate) : null,
           image_url: item.imageUrl || '',
-          affiliate_url: finalAffiliateUrl,
+          affiliate_url: item.offerLink || null,
           original_product_url: item.productLink || '',
           sales_count: item.sales ? Number(item.sales) : 0,
           rating: item.ratingStar ? Number(item.ratingStar) : 5,
@@ -127,7 +125,7 @@ export namespace ShopeeGateway {
     max_price: number;
     discount_percentage: number | null;
     image_url: string;
-    affiliate_url: string;
+    affiliate_url: string | null;
     original_product_url: string;
     sales_count: number;
     rating: number;

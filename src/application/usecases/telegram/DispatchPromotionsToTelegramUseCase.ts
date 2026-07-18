@@ -3,7 +3,10 @@ import { PromotionRepository } from '@infra/database/prisma/repositories/Promoti
 import { TelegramGateway } from '@infra/gateways/TelegramGateway';
 import { Injectable } from '@kermel/decorators/Injectable';
 
-import { formatTelegramPromotionMessage } from './formatTelegramPromotionMessage';
+import {
+  buildTelegramPromotionCaption,
+  buildTelegramPromotionReplyMarkup,
+} from './formatTelegramPromotionMessage';
 
 @Injectable()
 export class DispatchPromotionsToTelegramUseCase {
@@ -15,32 +18,72 @@ export class DispatchPromotionsToTelegramUseCase {
 
   async execute(): Promise<DispatchPromotionsToTelegramUseCase.Output> {
     const batch = await this.sendPromotionsToChannelsUseCase.execute();
+    const eligibleProducts = batch.products.filter((product) => {
+      if (!product.affiliateUrl) {
+        return false;
+      }
 
-    if (batch.products.length === 0) {
+      if (product.originalProductUrl && product.affiliateUrl === product.originalProductUrl) {
+        return false;
+      }
+
+      return true;
+    });
+
+    if (eligibleProducts.length === 0) {
       return {
         sentCount: 0,
-        message: batch.message,
+        message:
+          batch.products.length === 0
+            ? batch.message
+            : 'Nenhuma promoção elegível com link de afiliado foi encontrada para envio.',
         products: [],
         telegramMessageId: null,
       };
     }
 
-    const telegramMessage = formatTelegramPromotionMessage(batch.products);
-    const result = await this.telegramGateway.sendChannelMessage({ text: telegramMessage });
+    const sentMessageIds: number[] = [];
+    const sentProducts: typeof eligibleProducts = [];
 
-    if (!result.ok) {
-      throw new Error('Telegram gateway rejected the message.');
+    for (const [index, product] of eligibleProducts.entries()) {
+      try {
+        const result = await this.telegramGateway.sendChannelPhoto({
+          photo: product.imageUrl,
+          caption: buildTelegramPromotionCaption(product, index),
+          replyMarkup: buildTelegramPromotionReplyMarkup(product.affiliateUrl),
+        });
+
+        if (!result.ok) {
+          // eslint-disable-next-line no-console
+          console.error(`[Telegram] Failed to send promotion "${product.title}".`);
+          continue;
+        }
+
+        sentProducts.push(product);
+
+        if (result.messageId !== null) {
+          sentMessageIds.push(result.messageId);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(`[Telegram] Error while sending promotion "${product.title}":`, error);
+      }
     }
 
-    await this.promotionRepository.markAsSent({
-      ids: batch.promotionIds,
-    });
+    if (sentProducts.length > 0) {
+      await this.promotionRepository.markAsSent({
+        ids: sentProducts.map((product) => product.id),
+      });
+    }
 
     return {
-      sentCount: batch.products.length,
-      message: 'Achadinhos enviados com sucesso para o Telegram.',
-      products: batch.products,
-      telegramMessageId: result.messageId ?? null,
+      sentCount: sentProducts.length,
+      message:
+        sentProducts.length === eligibleProducts.length
+          ? 'Achadinhos enviados com sucesso para o Telegram.'
+          : `${sentProducts.length} achadinhos enviados com sucesso para o Telegram. ${eligibleProducts.length - sentProducts.length} falharam.`,
+      products: sentProducts,
+      telegramMessageId: sentMessageIds[0] ?? null,
     };
   }
 }
