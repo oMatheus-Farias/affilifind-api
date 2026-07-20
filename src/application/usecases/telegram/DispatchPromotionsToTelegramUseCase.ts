@@ -45,11 +45,11 @@ export class DispatchPromotionsToTelegramUseCase {
     const sentMessageIds: number[] = [];
     const sentProducts: typeof eligibleProducts = [];
 
-    for (const [index, product] of eligibleProducts.entries()) {
+    for (const [, product] of eligibleProducts.entries()) {
       try {
         const result = await this.telegramGateway.sendChannelPhoto({
           photo: product.imageUrl,
-          caption: buildTelegramPromotionCaption(product, index),
+          caption: buildTelegramPromotionCaption(product),
           replyMarkup: buildTelegramPromotionReplyMarkup(product.affiliateUrl),
         });
 

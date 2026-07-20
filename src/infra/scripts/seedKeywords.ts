@@ -102,7 +102,7 @@ const categorizedKeywords = [
   { keyword: 'luminaria astronauta', category: 'gadgets' },
   { keyword: 'kit ferramentas casa', category: 'gadgets' },
   { keyword: 'fita dupla face forte', category: 'gadgets' },
-  { keyword: ' organizador cabos', category: 'gadgets' },
+  { keyword: 'organizador cabos', category: 'gadgets' },
   { keyword: 'camera seguranca wifi', category: 'gadgets' },
 
   // --- 5. MODA, ACESSÓRIOS & SAZONAIS ---

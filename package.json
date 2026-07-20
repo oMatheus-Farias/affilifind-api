@@ -13,6 +13,7 @@
     "prepare": "husky",
     "postinstall": "prisma generate",
     "seed:keywords": "tsx src/infra/scripts/seedKeywords.ts",
+    "job:shopee-sync": "node --env-file=.env --import @swc-node/register/esm-register src/infra/scripts/runShopeeSyncJob.ts",
     "job:telegram-promotions": "node --env-file=.env --import @swc-node/register/esm-register src/infra/scripts/runTelegramPromotionsJob.ts"
   },
   "keywords": [],

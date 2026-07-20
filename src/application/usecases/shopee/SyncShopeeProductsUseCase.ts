@@ -21,7 +21,7 @@ export class SyncShopeeProductsUseCase {
       searchTargets = input.keywords.map((kw) => ({ keyword: kw, category: 'geral' }));
     } else {
       const { keywords } = await this.getDynamicKeywordsQuery.execute({
-        limit: 10, // Aumentado para 10 para buscar as 10 categorias dinâmicas
+        limit: 5,
       });
       searchTargets = keywords;
     }
@@ -44,7 +44,8 @@ export class SyncShopeeProductsUseCase {
     let totalReceived = 0;
     let createdCount = 0;
     let updatedCount = 0;
-    const allSavedProducts: any[] = [];
+    const allSavedProducts: ShopeeGateway.Output[] = [];
+    const processedExternalIds = new Set<string>();
 
     for (const target of searchTargets) {
       const { keyword, category } = target;
@@ -81,6 +82,11 @@ export class SyncShopeeProductsUseCase {
             continue;
           }
 
+          if (processedExternalIds.has(product.external_id)) {
+            continue;
+          }
+
+          processedExternalIds.add(product.external_id);
           allSavedProducts.push(product);
 
           const existingPromotion = await this.promotionRepository.findByExternalId({
@@ -159,7 +165,7 @@ export namespace SyncShopeeProductsUseCase {
   };
 
   export type Output = {
-    foundProducts: any[];
+    foundProducts: ShopeeGateway.Output[];
     summary: {
       itemsReceivedFromApi: number;
       itemsCreatedInDb: number;

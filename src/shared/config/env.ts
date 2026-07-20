@@ -10,6 +10,11 @@ const schema = z.object({
   SHOPEE_APP_ID: z.string(),
   SHOPEE_SECRET: z.string(),
 
+  // Shopee sync
+  SHOPEE_SYNC_JOB_ENABLED: z.string().default('false'),
+  SHOPEE_SYNC_CRON: z.string().default('15 */2 * * *'),
+  SHOPEE_SYNC_TIMEZONE: z.string().default('America/Sao_Paulo'),
+
   // Telegram
   TELEGRAM_BOT_TOKEN: z.string(),
   TELEGRAM_CHANNEL_CHAT_ID: z.string(),
