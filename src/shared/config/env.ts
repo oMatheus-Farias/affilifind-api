@@ -5,6 +5,9 @@ const schema = z.object({
   // Database
   DATABASE_URL: z.string(),
 
+  // Internal cron access
+  CRON_JOB_SECRET: z.string().min(1),
+
   // Shopee
   SHOPEE_API_URL: z.url(),
   SHOPEE_APP_ID: z.string(),

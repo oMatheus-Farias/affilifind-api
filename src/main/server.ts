@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 /* eslint-disable no-console */
 import { prismaClient } from '@infra/clients/prismaClient';
 import { startShopeeSyncScheduler } from '@infra/jobs/shopeeSyncScheduler';

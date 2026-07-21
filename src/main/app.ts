@@ -1,10 +1,9 @@
-import 'reflect-metadata';
-
 import { ApplicationError } from '@application/errors/application/ApplicationError';
 import { ErrorCode } from '@application/errors/ErrorCode';
 import { HttpError } from '@application/errors/http/HttpError';
 import { fastifyCors } from '@fastify/cors';
 import { fastify, type FastifyError } from 'fastify';
+import { internalRoutes } from 'src/routes/internalRoutes';
 import { shopeeRoutes } from 'src/routes/shopeeRoutes';
 import { ZodError } from 'zod';
 
@@ -23,6 +22,7 @@ app.get('/', async () => {
 });
 
 app.register(shopeeRoutes);
+app.register(internalRoutes);
 
 app.setErrorHandler((error, _, reply) => {
   if (error instanceof ZodError) {
