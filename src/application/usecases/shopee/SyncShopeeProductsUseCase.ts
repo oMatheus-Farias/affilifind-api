@@ -21,7 +21,8 @@ export class SyncShopeeProductsUseCase {
       searchTargets = input.keywords.map((kw) => ({ keyword: kw, category: 'geral' }));
     } else {
       const { keywords } = await this.getDynamicKeywordsQuery.execute({
-        limit: 5,
+        limit: 12,
+        keywordsPerCategory: 2,
       });
       searchTargets = keywords;
     }

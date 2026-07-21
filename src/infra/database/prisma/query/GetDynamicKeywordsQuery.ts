@@ -4,7 +4,8 @@ import { Injectable } from '@kermel/decorators/Injectable';
 @Injectable()
 export class GetDynamicKeywordsQuery {
   async execute(input: GetDynamicKeywordsQuery.Input): Promise<GetDynamicKeywordsQuery.Output> {
-    const limit = input.limit || 10;
+    const limit = input.limit || 12;
+    const keywordsPerCategory = input.keywordsPerCategory || 2;
 
     // 1. Descobre quais categorias distintas existem e estão ativas
     const distinctCategories = await prismaClient.searchKeyword.findMany({
@@ -21,23 +22,38 @@ export class GetDynamicKeywordsQuery {
 
     const keywordsWithCategory: Array<{ keyword: string; category: string }> = [];
     const keywordIdsToUpdate: string[] = [];
+    const selectedKeywordIds = new Set<string>();
 
-    // 2. Para cada categoria, busca o termo individual mais antigo
+    // 2. Para cada categoria, busca os termos menos usados para aumentar diversidade
     for (const category of categoriesToQuery) {
-      const record = await prismaClient.searchKeyword.findFirst({
+      const records = await prismaClient.searchKeyword.findMany({
         where: {
           isActive: true,
           category,
         },
         orderBy: [{ lastUsedAt: 'asc' }, { createdAt: 'desc' }],
+        take: keywordsPerCategory,
       });
 
-      if (record) {
+      for (const record of records) {
+        if (keywordsWithCategory.length >= limit) {
+          break;
+        }
+
+        if (selectedKeywordIds.has(record.id)) {
+          continue;
+        }
+
         keywordsWithCategory.push({
           keyword: record.keyword,
           category: record.category,
         });
         keywordIdsToUpdate.push(record.id);
+        selectedKeywordIds.add(record.id);
+      }
+
+      if (keywordsWithCategory.length >= limit) {
+        break;
       }
     }
 
@@ -56,6 +72,7 @@ export class GetDynamicKeywordsQuery {
 export namespace GetDynamicKeywordsQuery {
   export type Input = {
     limit?: number;
+    keywordsPerCategory?: number;
   };
 
   export type Output = {
