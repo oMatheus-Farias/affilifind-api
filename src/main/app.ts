@@ -33,6 +33,8 @@ app.register(shopeeRoutes);
 app.register(internalRoutes);
 
 app.setErrorHandler((error, _, reply) => {
+  // eslint-disable-next-line no-console
+  console.log('Error:', error);
   if (error instanceof ZodError) {
     return fastifyErrorResponse({
       reply,
@@ -46,6 +48,8 @@ app.setErrorHandler((error, _, reply) => {
   }
 
   if ((error as FastifyError).code === 'FST_ERR_VALIDATION') {
+    // eslint-disable-next-line no-console
+    console.log('Fastify validation error:', error);
     return fastifyErrorResponse({
       reply,
       statusCode: 400,
@@ -66,6 +70,8 @@ app.setErrorHandler((error, _, reply) => {
   }
 
   if (error instanceof ApplicationError) {
+    // eslint-disable-next-line no-console
+    console.log('ApplicationError:', error);
     return fastifyErrorResponse({
       reply,
       statusCode: error.statusCode ?? 400,
@@ -75,6 +81,8 @@ app.setErrorHandler((error, _, reply) => {
   }
 
   if ((error as FastifyError).code === 'FST_ERR_CTP_EMPTY_JSON_BODY') {
+    // eslint-disable-next-line no-console
+    console.log('Empty JSON body error:', error);
     return fastifyErrorResponse({
       reply,
       statusCode: 400,
