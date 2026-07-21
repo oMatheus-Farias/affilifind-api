@@ -58,6 +58,8 @@ export async function internalRoutes(app: FastifyInstance) {
     const parsedBody = shopeeSyncBodySchema.safeParse(request.body ?? undefined);
 
     if (!parsedBody.success) {
+      // eslint-disable-next-line no-console
+      console.error('[Internal Cron] Shopee sync validation failed', parsedBody.error);
       return fastifyErrorResponse({
         reply,
         statusCode: 400,
