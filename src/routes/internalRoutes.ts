@@ -117,15 +117,11 @@ export async function internalRoutes(app: FastifyInstance) {
     shopeeSyncRunning = true;
 
     try {
-      const result = await runShopeeSyncJob({
+      await runShopeeSyncJob({
         keywords: parsedBody.data?.keywords,
       });
 
-      return reply.status(200).send({
-        ok: true,
-        message: 'Shopee sync executed successfully.',
-        result,
-      });
+      return reply.status(204).send();
     } catch (error) {
       request.log.error(error, '[Internal Cron] Shopee sync failed');
 
@@ -152,13 +148,9 @@ export async function internalRoutes(app: FastifyInstance) {
     telegramPromotionsRunning = true;
 
     try {
-      const result = await runTelegramPromotionsJob();
+      await runTelegramPromotionsJob();
 
-      return reply.status(200).send({
-        ok: true,
-        message: 'Telegram promotions executed successfully.',
-        result,
-      });
+      return reply.status(204).send();
     } catch (error) {
       request.log.error(error, '[Internal Cron] Telegram promotions failed');
 
