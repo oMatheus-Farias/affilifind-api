@@ -43,6 +43,49 @@ function denyIfRunning(reply: FastifyReply, jobName: string) {
   });
 }
 
+function normalizeCronBody(body: unknown) {
+  if (typeof body !== 'string') {
+    return body ?? undefined;
+  }
+
+  const trimmedBody = body.trim();
+
+  if (!trimmedBody) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(trimmedBody) as unknown;
+  } catch {
+    const params = new URLSearchParams(trimmedBody);
+    const entries = [...params.entries()];
+
+    if (entries.length === 0) {
+      return undefined;
+    }
+
+    const parsedBody: Record<string, string | string[]> = {};
+
+    for (const [key, value] of entries) {
+      const currentValue = parsedBody[key];
+
+      if (currentValue === undefined) {
+        parsedBody[key] = value;
+        continue;
+      }
+
+      if (Array.isArray(currentValue)) {
+        currentValue.push(value);
+        continue;
+      }
+
+      parsedBody[key] = [currentValue, value];
+    }
+
+    return parsedBody;
+  }
+}
+
 export async function internalRoutes(app: FastifyInstance) {
   const prefix = '/api/v1/internal';
 
@@ -55,7 +98,7 @@ export async function internalRoutes(app: FastifyInstance) {
       return denyIfRunning(reply, 'Shopee sync');
     }
 
-    const parsedBody = shopeeSyncBodySchema.safeParse(request.body ?? undefined);
+    const parsedBody = shopeeSyncBodySchema.safeParse(normalizeCronBody(request.body));
 
     if (!parsedBody.success) {
       // eslint-disable-next-line no-console
