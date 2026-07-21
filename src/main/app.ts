@@ -17,6 +17,14 @@ app.register(fastifyCors, {
   credentials: true,
 });
 
+app.addContentTypeParser(
+  /^application\/x-www-form-urlencoded(?:;.*)?$/,
+  { parseAs: 'string' },
+  (_, body, done) => {
+    done(null, body);
+  },
+);
+
 app.get('/', async () => {
   return { message: '🟢 OK' };
 });
@@ -75,6 +83,20 @@ app.setErrorHandler((error, _, reply) => {
         {
           field: 'body',
           message: 'Malformed JSON body',
+        },
+      ],
+    });
+  }
+
+  if ((error as FastifyError).code === 'FST_ERR_CTP_INVALID_MEDIA_TYPE') {
+    return fastifyErrorResponse({
+      reply,
+      statusCode: 415,
+      code: ErrorCode.VALIDATION,
+      message: [
+        {
+          field: 'content-type',
+          message: 'Unsupported Media Type',
         },
       ],
     });
