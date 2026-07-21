@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node --env-file=.env --import @swc-node/register/esm-register --watch src/main/server.ts",
-    "build": "tsup src/main/server.ts --format esm --out-dir dist",
+    "build": "prisma generate && tsup src/main/server.ts --format esm --out-dir dist",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
