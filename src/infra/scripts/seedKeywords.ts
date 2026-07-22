@@ -133,6 +133,58 @@ const categorizedKeywords = [
   { keyword: 'som automotivo', category: 'outros' },
   { keyword: 'organizador porta malas', category: 'outros' },
   { keyword: 'led automotivo', category: 'outros' },
+
+  // --- 7. ESPORTES, SAÚDE & FITNESS ---
+  { keyword: 'faixa elastica', category: 'fitness' },
+  { keyword: 'colchonete yoga', category: 'fitness' },
+  { keyword: 'corda de pular', category: 'fitness' },
+  { keyword: 'squeeze esportivo', category: 'fitness' },
+  { keyword: 'roda abdominal', category: 'fitness' },
+  { keyword: 'halter ajustavel', category: 'fitness' },
+  { keyword: 'kit pilates', category: 'fitness' },
+  { keyword: 'joelheira esportiva', category: 'fitness' },
+  { keyword: 'massageador muscular', category: 'fitness' },
+  { keyword: 'balanca corporal', category: 'fitness' },
+
+  // --- 8. BEBÊ & INFANTIL ---
+  { keyword: 'mordedor bebe', category: 'baby' },
+  { keyword: 'chupeta ortodontica', category: 'baby' },
+  { keyword: 'organizador maternidade', category: 'baby' },
+  { keyword: 'kit alimentação bebe', category: 'baby' },
+  { keyword: 'babador silicone', category: 'baby' },
+  { keyword: 'termometro infantil', category: 'baby' },
+  { keyword: 'banheira dobravel bebe', category: 'baby' },
+  { keyword: 'cadeira alimentar bebe', category: 'baby' },
+
+  // --- 9. PAPELARIA & HOME OFFICE ---
+  { keyword: 'organizador escritorio', category: 'papelaria' },
+  { keyword: 'suporte notebook', category: 'papelaria' },
+  { keyword: 'caderno inteligente', category: 'papelaria' },
+  { keyword: 'estojo escolar', category: 'papelaria' },
+  { keyword: 'caneta marcador', category: 'papelaria' },
+  { keyword: 'mouse pad ergonomico', category: 'papelaria' },
+  { keyword: 'suporte monitor', category: 'papelaria' },
+  { keyword: 'planner semanal', category: 'papelaria' },
+
+  // --- 10. VIAGEM & ORGANIZAÇÃO PESSOAL ---
+  { keyword: 'necessaire viagem', category: 'viagem' },
+  { keyword: 'almofada pescoço viagem', category: 'viagem' },
+  { keyword: 'organizador mala', category: 'viagem' },
+  { keyword: 'frascos viagem', category: 'viagem' },
+  { keyword: 'bolsa anti furto', category: 'viagem' },
+  { keyword: 'cadeado mala', category: 'viagem' },
+  { keyword: 'kit viagem higiene', category: 'viagem' },
+  { keyword: 'mochila viagem', category: 'viagem' },
+
+  // --- 11. JARDIM, CASA EXTERNA & LUZES ---
+  { keyword: 'luminaria solar', category: 'jardim' },
+  { keyword: 'vaso planta decorativo', category: 'jardim' },
+  { keyword: 'kit jardinagem', category: 'jardim' },
+  { keyword: 'mangueira expansivel', category: 'jardim' },
+  { keyword: 'regador jardim', category: 'jardim' },
+  { keyword: 'pulverizador plantas', category: 'jardim' },
+  { keyword: 'tela mosquiteiro', category: 'jardim' },
+  { keyword: 'fita vedacao porta', category: 'jardim' },
 ];
 
 async function main() {
