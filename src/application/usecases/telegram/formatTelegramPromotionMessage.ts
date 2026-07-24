@@ -49,7 +49,7 @@ export function buildTelegramPromotionCaption(product: TelegramPromotionItem) {
     '',
     `💰  Preço: <b>R$ ${price}</b>`,
     '',
-    maxPrice ? `💲  Antes: R$ ${maxPrice}` : null,
+    maxPrice ? `💲  Preço Máximo: R$ ${maxPrice}` : null,
     '',
     `💸  Desconto: <b>${discount}</b>`,
     '',
